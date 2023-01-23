@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 50px auto;
+            display: flex;
+            justify-content: center;
+        }
+        span {
+            font-style: italic;
+        }
+        .chat_block {
+            height: 580px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .chat_area {
+            padding: 10px;
+            width: 400px;
+            height: 500px;
+            position: relative;
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: column;
+            overflow-y: scroll;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #c7a9c4,#fda3b4,#ffab7d,#f5cd41);
+        }
+        .chat_area > div {
+            max-width: 80%;
+            padding: 5px 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+            color: black;
+        }
+        .chat_area .sent {
+            background-color: antiquewhite;
+            align-self: flex-end;
+        }
+        .chat_area .recieved {
+            background-color: #f53a5ca8;
+            align-self: flex-start;
+        }
+        .message_area {
+            width: 310px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .message {
+            padding: 5px;
+        }
+        button {
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+        .send-btn {
+            padding: 5px;
+            background-color: #ffab7d;
+        }
+        .geo-btn {
+            background-color: #c7a9c4;
+        }
+        .send-btn:hover {
+            cursor: pointer;
+            background-color: #f78141;
+        }
+        .geo-btn:hover{
+            cursor: pointer;
+            background-color: #c777bf;
+        }
+        
+    </style>
+    <title>Document</title>
+</head>
+<body>
+
+    <main class="chat_block">
+
+        <span class="connection">Соединение:</span>
+        <div class="chat_area"></div>
+
+        <div class="message_area">
+            <input type="text" class="input" placeholder="Введите сообщение">
+            <button class="send-btn">Отправить</button>
+            <button class="geo-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style="fill: rgb(255, 255, 255);">
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M13 4.069V2h-2v2.069A8.01 8.01 0 0 0 4.069 11H2v2h2.069A8.008 8.008 0 0 0 11 19.931V22h2v-2.069A8.007 8.007 0 0 0 19.931 13H22v-2h-2.069A8.008 8.008 0 0 0 13 4.069zM12 18c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"></path>
+                </svg>
+            </button>
+            <span class="position"></span>
+        </div>
+        
+    </main> 
+    
+<script>
+
+    function chating() {
+
+        let websocket = new WebSocket('wss://echo-ws-service.herokuapp.com/');
+
+        let connect = document.querySelector('.connection');
+        let position = document.querySelector('.position');
+
+        let output = document.querySelector('.chat_area');
+        let input = document.querySelector('.input');
+
+        let sentBtn = document.querySelector('.send-btn');
+        let geoBtn = document.querySelector('.geo-btn');
+
+        sentBtn.addEventListener('click', () => sentMsg());
+        geoBtn.addEventListener('click', () => sentGeo());
+
+        websocket.onopen = () => {
+            connect.innerText = 'Соединение: установлено';
+        }
+
+        websocket.onerror = () => {
+            connect.innerText = 'Соединение: прервано';
+        }
+
+            function sentMsg() {
+                if (!input.value) return;
+
+                websocket.send(input.value);
+                websocket.onmessage = (event) => {
+                    writeMessage(event.data, true);
+                }
+
+                writeMessage(input.value, false);
+                input.value = "";
+            }
+            
+            function writeMessage(msg, isRecieved) {
+                let messages = `<div class="${isRecieved? "recieved" : "sent"}">${msg}</div>`;
+                output.innerHTML += messages;
+            }
+
+            function sentGeo() {
+                if('geolocation' in navigator) {
+                    navigator.geolocation.getCurrentPosition(success, error);
+                } else {
+                    position.innerText = 'Функция определения местоположения недоступна';
+                }
+            }
+
+                function success(locObj) {
+                    let link = `<a href="https://www.openstreetmap.org/#map=12/${locObj.coords.latitude}/${locObj.coords.longitude}" target="_blank">Мое местоположение</a>`;
+
+                    websocket.send(link);
+                    websocket.onmessage = () => {};
+
+                    writeMessage(link, false);
+                }
+
+                function error() {
+                    position.innerText = 'Ошибка при попытке определить местоположение';
+                }
+    }
+
+    document.addEventListener('DOMContentLoaded', chating());
+
+</script>
+</body>
+</html>

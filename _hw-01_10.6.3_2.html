@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 50px auto;
+            display: flex;
+            justify-content: center;
+        }
+        button {
+            background-color: #E3B873;
+            padding: 15px;
+            border: 0;
+            border-radius: 10px;
+        }
+        button:hover {
+            cursor: pointer;
+            background-color: #e4ac52;
+            transform: scale(1.05);
+        }
+        .btn_info {
+            width: 80px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+    </style>
+    <title>Document</title>
+</head>
+<body>
+
+    <button class="button">Узнать параметры экрана</button>
+    
+<script>
+
+    function screenParams() {
+
+        let button = document.querySelector('.button');
+
+        button.addEventListener('click', () => alertInfo());
+
+        function alertInfo() {
+            let screenW = window.screen.width;
+            let screenH = window.screen.height;
+
+            let info = `
+                Параметры вашего экрана:
+                ширина: ${screenW}px,
+                высота: ${screenH}px.
+            `;
+
+            alert(info);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', screenParams);
+
+</script>
+</body>
+</html>
